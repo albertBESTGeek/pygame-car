@@ -3,7 +3,19 @@ import pygame
 import math
 import random
 import time
+def lanceCountDown():
+	for _ in range(2):
+		countdown1 = pygame.mixer.Sound("sounds/countdown1.ogg")
+		countdown1.set_volume(1)
+		countdown1.play()
+		time.sleep(1)
+	countdown2 = pygame.mixer.Sound("sounds/countdown2.ogg")
+	countdown2.set_volume(1)
+	countdown2.play()
+	# author: Destructavator -> http://opengameart.org/content/countdown
 
+	time.sleep(1)
+## INITIALISATION DU JEU
 pygame.init()
 width = 800
 height = 600
@@ -33,37 +45,19 @@ tires.set_volume(1)
 
 crash = pygame.mixer.Sound("sounds/crash.ogg")
 crash.set_volume(2)
-#author: qubodup -> http://opengameart.org/content/crash-collision
-
-countdown1 = pygame.mixer.Sound("sounds/countdown1.ogg")
-countdown1.set_volume(1)
-countdown1.play()
-
-time.sleep(1)
-
-countdown1 = pygame.mixer.Sound("sounds/countdown1.ogg")
-countdown1.set_volume(1)
-countdown1.play()
-
-time.sleep(1)
-
-countdown2 = pygame.mixer.Sound("sounds/countdown2.ogg")
-countdown2.set_volume(1)
-countdown2.play()
-#author: Destructavator -> http://opengameart.org/content/countdown
-
-time.sleep(1)
 
 soundtrack = pygame.mixer.Sound("sounds/soundtrack.ogg")
-soundtrack.set_volume(0.5)
-soundtrack.play(-1)
+soundtrack.set_volume(0.05)
+# DEBUT DU JEU
+# lanceCountDown()
+#author: qubodup -> http://opengameart.org/content/crash-collision
+soundtrack.play(-1,fade_ms=1000) # lecteure en contine
 #author: Dan Knoflicek -> http://opengameart.org/content/steppin-up
-
 def avoided(count):
 	scoreFont = score.render("Score: %d" % count, True, (0,0,0))
 	screen.blit(scoreFont, (50,570))
 
-def truck(truck_x,truck_y):
+def truck(truck_x,truck_y): # affichage
 	screen.blit(truckimg,(truck_x,truck_y))
 
 def car(x,y):
@@ -74,49 +68,36 @@ def message2(x):
 	rect = messageFont2.get_rect()
 	rect.center = ((width//2),(height//2))
 	screen.blit(messageFont2, rect)
-	
 	pygame.display.update()
-	
 	time.sleep(3)
-	
-	playing()	
+	playing()	 # redémarrage
 	
 def message(x):
-	messageFont = font.render("You went off the road!", True, (0,0,0))
+	messageFont = font.render(x, True, (0,0,0))
 	rect = messageFont.get_rect()
 	rect.center = ((width//2),(height//2))
 	screen.blit(messageFont, rect)
-	
 	pygame.display.update()
-	
-	time.sleep(3)
-	
-	playing()	
-	
+	# time.sleep(3)
+	playing()
 def crashed2():
 	message2("You hit a truck!")
 
 def crashed():
 	message("You went off the road!")
 	
-def playing():
+def playing(): # lancement d'un nouveau jeu
 	x = 351
-	y = 480 	
-
+	y = 480
 	xChange = 0
-	
-	truck_x = random.randrange(50,770)
+	truck_x = random.randrange(50,770) # tirage d'une abscisse au hasard
 	truck_y = -500
 	truck_speed = 2
 	truck_height = 145
 	truck_width = 70
-
 	score = 0
-	
-	while True:
-		
-		clock.tick(fps)
-		
+	while True: # boucle de jeu principale
+
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				exit()
@@ -125,34 +106,31 @@ def playing():
 				if event.key == pygame.K_LEFT:
 					xChange = -6
 				if event.key == pygame.K_RIGHT:
-					xChange = 6
+					xChange = +6
 					
 			if event.type == pygame.KEYUP:
 				if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 					xChange = 0
 					
 		x += xChange
+		screen.blit(background, backrect)	 # affiche le fond
+		truck(truck_x,truck_y) #affiche le truck
+		truck_y += truck_speed # déplace le camion
 		
-		screen.blit(background, backrect)
-		
-		truck(truck_x,truck_y)
-		truck_y += truck_speed
-		
-		car(x,y)
-		
+		car(x,y) #affiche la voiture
 		avoided(score)
-		
 		#crash detection if the car goes off the road
 		if x > (width - 87) or x < 35:
+			crash.play() # démarrage de sons
 			tires.play()
-			crash.play()
-			crashed()
+			tires.fadeout(1200)
+			#
+			crashed() # temporisation
 		
 		#starting the truck along random coordinates
-		if truck_y > height:
-			truck_y =- 145
-			truck_x = random.randrange(50,770)
-			
+		if truck_y > height: # s'il est parti de l'écran
+			truck_y =- 145 # remettre en haut
+			truck_x = random.randrange(50,770)# repositionne en x
 			score += 1 #increase the score +1 for every truck is avoided
 			truck_speed += 0.2 #increase the speed by 0.2 for every truck passed
 		
@@ -164,5 +142,6 @@ def playing():
 				crashed2()
 		
 		pygame.display.flip()
-	
+		clock.tick(fps)
+
 playing()
